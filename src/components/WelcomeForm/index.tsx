@@ -1,9 +1,16 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 import { Avatar, Button, Flex, Heading, Input, Tag, Text } from '@chakra-ui/react'
 
 export default function WelcomeForm() {
   const [username, setUsername] = useState('tmowes')
+  const { push } = useRouter()
+  const onSubmit = () => {
+    if (username.trim().length >= 3) {
+      push('/chat')
+    }
+  }
   return (
     <Flex p="4">
       <Flex direction="column" textAlign="center" gap="2">
@@ -19,7 +26,9 @@ export default function WelcomeForm() {
             color: 'gray.400',
           }}
         />
-        <Button colorScheme="green">Entrar</Button>
+        <Button colorScheme="green" onClick={onSubmit}>
+          Entrar
+        </Button>
       </Flex>
       <Flex
         direction="column"
