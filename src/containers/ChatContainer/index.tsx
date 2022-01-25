@@ -1,13 +1,14 @@
 import { Flex } from '@chakra-ui/react'
 
-import { FormContainerProps } from './types'
+import { ChatContainerProps } from './types'
 
-export default function FormContainer(props: FormContainerProps) {
+export default function ChatContainer(props: ChatContainerProps) {
   const { children } = props
   return (
     <Flex
       maxW={980}
-      w="100%"
+      w={[320, 480, 724, 980]}
+      h="96%"
       m="auto"
       align="center"
       bg="rgba(255,255,255,0.08)"

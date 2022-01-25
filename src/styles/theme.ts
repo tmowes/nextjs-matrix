@@ -55,6 +55,9 @@ export const theme = extendTheme({
           'linear(to-b, #A0AEC040, #71809666, #71809699, gray.500, gray.500, #71809666, #2D374840)',
         borderRadius: '3px',
       },
+      '&::-webkit-scrollbar-corner': {
+        bg: 'transparent',
+      },
       '&::focus': {
         outlineColor: 'transparent',
         borderColor: 'gray.700',

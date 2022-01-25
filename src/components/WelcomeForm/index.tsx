@@ -3,11 +3,16 @@ import { useRouter } from 'next/router'
 
 import { Avatar, Button, Flex, Heading, Input, Tag, Text } from '@chakra-ui/react'
 
+import { useAuth } from '../../contexts/AuthProvider'
+
 export default function WelcomeForm() {
+  const { onLogin } = useAuth()
   const [username, setUsername] = useState('tmowes')
   const { push } = useRouter()
-  const onSubmit = () => {
+
+  const onSubmit = async () => {
     if (username.trim().length >= 3) {
+      await onLogin(username)
       push('/chat')
     }
   }
