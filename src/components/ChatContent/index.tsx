@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { Avatar, Flex, Heading, IconButton, Input, Tag, Text } from '@chakra-ui/react'
-import { AiOutlineSend, AiOutlineLogout } from 'react-icons/ai'
+import { Avatar, Flex, IconButton, Input, Tag, Text } from '@chakra-ui/react'
+import { AiOutlineSend, AiOutlineLogout, AiOutlineClose } from 'react-icons/ai'
 
 import { useAuth } from '../../contexts/AuthProvider'
 import { Message } from './types'
@@ -20,13 +20,16 @@ export default function ChatContent() {
         id: new Date().getTime().toString(),
         message,
         username: user.login,
+        avatar_url: user.avatar_url,
         create_at: new Date(),
       },
     ])
     setMessage('')
   }
 
-  console.log({ user })
+  const onDeleteMessage = (id: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== id))
+  }
 
   return (
     <Flex h="100%" w="100%" direction="column" position="relative" overflow="hidden">
@@ -88,10 +91,36 @@ export default function ChatContent() {
           borderWidth="1px"
           borderColor="rgba(255,255,255,0.15)"
         >
-          <Flex w="100%" h="100%" overflowX="scroll" direction="column">
-            <Heading fontSize={24}>CHAT</Heading>
+          <Flex w="100%" h="100%" overflowX="scroll" direction="column" p="2">
             {messages.map((item) => (
-              <Text key={item.id}>{item.message}</Text>
+              <Flex
+                key={item.id}
+                direction="column"
+                maxW="60%"
+                bg="blackAlpha.500"
+                mb="2"
+                borderRadius="8"
+                p="2"
+              >
+                <Flex align="center" gap="2">
+                  <Avatar src={item.avatar_url} size="xs" />
+                  <Text fontSize={14}>{item.username}</Text>
+                  <Text fontSize={10} color="gray.400">
+                    {item.create_at.toLocaleDateString()}
+                  </Text>
+                  <IconButton
+                    onClick={() => onDeleteMessage(item.id)}
+                    icon={<AiOutlineClose />}
+                    aria-label="Apagar mensagem"
+                    colorScheme="blackAlpha"
+                    size="xs"
+                    ml="auto"
+                  />
+                </Flex>
+                <Text fontSize={14} mt="2">
+                  {item.message}
+                </Text>
+              </Flex>
             ))}
           </Flex>
           <Flex
@@ -109,6 +138,9 @@ export default function ChatContent() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Insira sua mensagem aqui..."
+              _placeholder={{ color: 'gray.500' }}
+              bg="blackAlpha.500"
+              onKeyPress={(e) => e.key === 'Enter' && onSendMessage()}
               rounded="full"
             />
             <IconButton
