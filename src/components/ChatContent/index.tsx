@@ -1,10 +1,30 @@
+import { useState } from 'react'
+
 import { Avatar, Flex, Heading, IconButton, Input, Tag, Text } from '@chakra-ui/react'
 import { AiOutlineSend, AiOutlineLogout } from 'react-icons/ai'
 
 import { useAuth } from '../../contexts/AuthProvider'
+import { Message } from './types'
 
 export default function ChatContent() {
   const { user, contacts, onLogout } = useAuth()
+  const [message, setMessage] = useState('')
+  const [messages, setMessages] = useState<Message[]>([])
+
+  const onSendMessage = () => {
+    if (!user) return
+    if (!message.trim()) return
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: new Date().getTime().toString(),
+        message,
+        username: user.login,
+        create_at: new Date(),
+      },
+    ])
+    setMessage('')
+  }
 
   console.log({ user })
 
@@ -68,8 +88,11 @@ export default function ChatContent() {
           borderWidth="1px"
           borderColor="rgba(255,255,255,0.15)"
         >
-          <Flex w="100%" h="100%" overflowX="scroll">
+          <Flex w="100%" h="100%" overflowX="scroll" direction="column">
             <Heading fontSize={24}>CHAT</Heading>
+            {messages.map((item) => (
+              <Text key={item.id}>{item.message}</Text>
+            ))}
           </Flex>
           <Flex
             mt="auto"
@@ -82,10 +105,17 @@ export default function ChatContent() {
             borderTopWidth="1px"
             borderColor="rgba(255,255,255,0.15)"
           >
-            <Input placeholder="Insira sua mensagem aqui..." rounded="full" />
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Insira sua mensagem aqui..."
+              rounded="full"
+            />
             <IconButton
               icon={<AiOutlineSend />}
               aria-label="Enviar mensagem"
+              disabled={!message.trim()}
+              onClick={onSendMessage}
               colorScheme="blackAlpha"
               rounded="full"
               size="lg"
