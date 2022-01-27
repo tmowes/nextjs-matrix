@@ -1,35 +1,52 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Avatar, Flex, IconButton, Input, Tag, Text } from '@chakra-ui/react'
 import { AiOutlineSend, AiOutlineLogout, AiOutlineClose } from 'react-icons/ai'
 
 import { useAuth } from '../../contexts/AuthProvider'
-import { Message } from './types'
+import { Message, MessageDTO } from './types'
+import {
+  deleteSupabaseMessage,
+  loadSupabaseMessages,
+  sendSupabaseMessage,
+} from '../../services/supabase'
+import { fixServerDate } from '../../utils/fixServerDate'
 
 export default function ChatContent() {
   const { user, contacts, onLogout } = useAuth()
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
 
-  const onSendMessage = () => {
+  const onSendMessage = async () => {
     if (!user) return
     if (!message.trim()) return
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: new Date().getTime().toString(),
-        message,
-        username: user.login,
-        avatar_url: user.avatar_url,
-        create_at: new Date(),
-      },
-    ])
-    setMessage('')
+
+    const newMessage: MessageDTO = {
+      message,
+      username: user.login,
+      avatar_url: user.avatar_url,
+    }
+
+    const result = await sendSupabaseMessage(newMessage)
+    if (result) {
+      setMessages((prev) => [...prev, result])
+      setMessage('')
+    }
   }
 
-  const onDeleteMessage = (id: string) => {
+  const onDeleteMessage = async (id: string) => {
+    await deleteSupabaseMessage(id)
     setMessages((prev) => prev.filter((m) => m.id !== id))
   }
+
+  const loadMessages = useCallback(async () => {
+    const messagesList = await loadSupabaseMessages()
+    setMessages(messagesList)
+  }, [])
+
+  useEffect(() => {
+    loadMessages()
+  }, [loadMessages])
 
   return (
     <Flex h="100%" w="100%" direction="column" position="relative" overflow="hidden">
@@ -106,7 +123,7 @@ export default function ChatContent() {
                   <Avatar src={item.avatar_url} size="xs" />
                   <Text fontSize={14}>{item.username}</Text>
                   <Text fontSize={10} color="gray.400">
-                    {item.create_at.toLocaleDateString()}
+                    {fixServerDate(item.created_at)}
                   </Text>
                   <IconButton
                     onClick={() => onDeleteMessage(item.id)}

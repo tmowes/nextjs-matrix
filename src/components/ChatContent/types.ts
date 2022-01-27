@@ -3,5 +3,6 @@ export type Message = {
   username: string
   avatar_url: string
   message: string
-  create_at: Date
+  created_at: string
 }
+export type MessageDTO = Omit<Message, 'id' | 'created_at'>
