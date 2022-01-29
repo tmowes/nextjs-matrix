@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Avatar, Flex, IconButton, Input, Tag, Text } from '@chakra-ui/react'
 import { AiOutlineSend, AiOutlineLogout, AiOutlineClose } from 'react-icons/ai'
@@ -8,7 +8,9 @@ import { Message, MessageDTO } from './types'
 import {
   deleteSupabaseMessage,
   loadSupabaseMessages,
+  loadSupabaseMessagesRealtime,
   sendSupabaseMessage,
+  supabase,
 } from '../../services/supabase'
 import { fixServerDate } from '../../utils/fixServerDate'
 
@@ -16,6 +18,7 @@ export default function ChatContent() {
   const { user, contacts, onLogout } = useAuth()
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const onSendMessage = async () => {
     if (!user) return
@@ -29,7 +32,7 @@ export default function ChatContent() {
 
     const result = await sendSupabaseMessage(newMessage)
     if (result) {
-      setMessages((prev) => [...prev, result])
+      // setMessages((prev) => [...prev, result])
       setMessage('')
     }
   }
@@ -47,6 +50,23 @@ export default function ChatContent() {
   useEffect(() => {
     loadMessages()
   }, [loadMessages])
+
+  useEffect(() => {
+    const subscribe = loadSupabaseMessagesRealtime((newMessage) =>
+      setMessages((prev) => [...prev, newMessage]),
+    )
+
+    return () => {
+      subscribe.unsubscribe()
+    }
+  }, [])
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   return (
     <Flex h="100%" w="100%" direction="column" position="relative" overflow="hidden">
@@ -139,6 +159,7 @@ export default function ChatContent() {
                 </Text>
               </Flex>
             ))}
+            <div ref={messagesEndRef} />
           </Flex>
           <Flex
             mt="auto"

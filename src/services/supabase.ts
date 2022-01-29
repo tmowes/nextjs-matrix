@@ -18,10 +18,18 @@ export const loadSupabaseMessages = async (): Promise<Message[]> => {
     }
     return []
   } catch (error) {
-    console.log('sendSupabaseMessageError', error)
+    console.log('loadSupabaseMessagesError', error)
     return []
   }
 }
+
+export const loadSupabaseMessagesRealtime = (getNewMessage: (message: Message) => void) =>
+  supabase
+    .from('messages')
+    .on('INSERT', (data) => {
+      getNewMessage(data.new)
+    })
+    .subscribe()
 
 export const sendSupabaseMessage = async (message: MessageDTO): Promise<Message | null> => {
   try {
